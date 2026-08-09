@@ -17,7 +17,8 @@ import {
   Marker,
   Polyline
 } from "@react-google-maps/api";
-import { Users, Truck, ShoppingBag, Banknote } from "lucide-react";
+import { Users, Truck, ShoppingBag, Banknote, Database } from "lucide-react";
+import { setDoc, doc, addDoc, serverTimestamp } from "firebase/firestore";
 
 const SIRDARYO_CENTER = { lat: 40.5, lng: 68.6 };
 const MAP_CONTAINER_STYLE = { width: '100%', height: '500px' };
@@ -25,6 +26,7 @@ const MAP_CONTAINER_STYLE = { width: '100%', height: '500px' };
 export default function DashboardPage() {
   const [onlineDrivers, setOnlineDrivers] = useState<Driver[]>([]);
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [seeding, setSeeding] = useState(false);
   const [stats, setStats] = useState({
     todayOrders: 0,
     platformIncome: 0,
@@ -32,9 +34,76 @@ export default function DashboardPage() {
     onlineDriversCount: 0
   });
 
+  const generateDemoData = async () => {
+    setSeeding(true);
+    try {
+      // 1. Global Settings
+      await setDoc(doc(db, "settings", "global"), {
+        baseFare: 5000,
+        pricePerKm: 1500,
+        commissionPercent: 10,
+        currency: "UZS"
+      });
+
+      // 2. Demo Drivers
+      const demoDrivers = [
+        { name: "Alijon Valiyev", car: "Chevrolet Gentra", plate: "20 A 777 AA", lat: 40.51, lng: 68.65 },
+        { name: "Otabek G'aniyev", car: "Chevrolet Cobalt", plate: "20 B 123 BB", lat: 40.49, lng: 68.60 },
+        { name: "Sardor Azimov", car: "Daewoo Nexia 3", plate: "20 C 456 CC", lat: 40.52, lng: 68.68 }
+      ];
+
+      for (const d of demoDrivers) {
+        const dId = "demo_driver_" + Math.random().toString(36).slice(2, 7);
+        await setDoc(doc(db, "users", dId), {
+          fullName: d.name,
+          phoneNumber: "+998901234567",
+          role: "driver",
+          isBlocked: false,
+          createdAt: serverTimestamp()
+        });
+        await setDoc(doc(db, "drivers", dId), {
+          uid: dId,
+          carModel: d.car,
+          carPlateNumber: d.plate,
+          isApproved: true,
+          isOnline: true,
+          currentLat: d.lat,
+          currentLng: d.lng,
+          rating: 4.9,
+          totalTrips: 150
+        });
+      }
+
+      // 3. Demo Orders
+      for (let i = 0; i < 5; i++) {
+        await addDoc(collection(db, "orders"), {
+          orderId: "demo_order_" + i,
+          passengerId: "demo_p_" + i,
+          driverId: "demo_driver_1",
+          pickupLat: 40.5,
+          pickupLng: 68.6,
+          pickupAddress: "Guliston sh., Markaz",
+          destinationLat: 40.55,
+          destinationLng: 68.7,
+          destinationAddress: "Yangiyer yo'li",
+          price: 15000 + (i * 2000),
+          commissionAmount: 1500 + (i * 200),
+          status: i % 2 === 0 ? "completed" : "in_progress",
+          createdAt: serverTimestamp()
+        });
+      }
+      alert("Demo ma'lumotlar muvaffaqiyatli yaratildi!");
+    } catch (e) {
+      console.error(e);
+      alert("Xatolik yuz berdi");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+    googleMapsApiKey: "AIzaSyC5zNz0WXECfkBmiIa9N_lOtx-Mty3o4JU"
   });
 
   useEffect(() => {
@@ -95,7 +164,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Platforma Boshqaruv Paneli</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800">Platforma Boshqaruv Paneli</h1>
+        <button
+          onClick={generateDemoData}
+          disabled={seeding}
+          className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 transition-all disabled:opacity-50"
+        >
+          <Database className="h-4 w-4 text-amber-500" />
+          {seeding ? "Yaratilmoqda..." : "Demo Ma'lumotlarni Yaratish"}
+        </button>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

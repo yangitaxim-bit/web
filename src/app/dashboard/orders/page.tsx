@@ -38,7 +38,7 @@ export default function OrdersPage() {
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+    googleMapsApiKey: "AIzaSyC5zNz0WXECfkBmiIa9N_lOtx-Mty3o4JU"
   });
 
   useEffect(() => {
