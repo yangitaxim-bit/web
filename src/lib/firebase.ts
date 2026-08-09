@@ -4,12 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC1oenC7Iv2MmIJzBQi9bPfFpABABb7PSo",
+  authDomain: "yangiyer-taksi.firebaseapp.com",
+  projectId: "yangiyer-taksi",
+  storageBucket: "yangiyer-taksi.firebasestorage.app",
+  messagingSenderId: "196999224608",
+  appId: "1:196999224608:web:00de0a007e5cac277ecb45",
+  measurementId: "G-5XS6E435XY"
 };
 
 // Initialize Firebase
